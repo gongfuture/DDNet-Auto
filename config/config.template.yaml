@@ -1,0 +1,6 @@
+# 调试模式选项
+DevOptions:
+  # 是否开启调试模式，True 为开启，False 为关闭
+  DevMode: fasle
+  # Log 等级，DEBUG 为调试模式，INFO 为正常模式
+  LogLevel: INFO
