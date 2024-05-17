@@ -97,15 +97,31 @@ def write_config_param(config_param_name: str, value: Any) -> None:
         yaml.dump(CONFIG, f)
 
 
-def set_log_level() -> None:
+def set_log_level(level=None) -> None:
     """
     根据devmode的值设置日志级别
+    :param level: 日志级别（仅调试）
+    :return: None
     """
     devmode = get_config_param('DevMode')
-    if devmode:
-        CONFIG['DevOptions']['LogLevel'] = 'DEBUG'
+    level_state = {
+        'DEBUG': ['DE', 'DEBUG', 'BUG', 'D'],
+        'INFO': ['INFO', 'INF', 'I'],
+        'WARNING': ['WARNING', 'WARN', 'W'],
+        'ERROR': ['ERROR', 'ERR', 'E'],
+        'CRITICAL': ['CRITICAL', 'CRI', 'C']
+    }
+    if level is not None:
+        level_upper = level.upper()
+        for log_level, aliases in level_state.items():
+            if level_upper in aliases:
+                CONFIG['DevOptions']['LogLevel'] = log_level
+                break
     else:
-        CONFIG['DevOptions']['LogLevel'] = 'INFO'
+        if devmode:
+            CONFIG['DevOptions']['LogLevel'] = 'DEBUG'
+        else:
+            CONFIG['DevOptions']['LogLevel'] = 'INFO'
 
     # 将修改后的CONFIG字典写回到config.yaml文件中
     write_config_param('LogLevel', CONFIG['DevOptions']['LogLevel'])
