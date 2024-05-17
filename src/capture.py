@@ -2,9 +2,6 @@ import ocr
 import io
 import mss
 from PIL import Image
-import global_variable
-
-global_variable._init()
 
 
 # Copy from https://blog.csdn.net/weixin_50674989/article/details/122459230

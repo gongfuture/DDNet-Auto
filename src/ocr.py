@@ -7,7 +7,6 @@ import os
 import time
 
 
-glv._init()
 
 # need to run only once to download and load model into memory
 ocr = PaddleOCR(use_mp=True, use_angle_cls=False, precision="fp32", lang="ch")
@@ -20,11 +19,13 @@ def ocr_recognition(img_data):
     result = ocr.ocr(img_array)
 
     if not glv.get("devmode"):
+        print("禁止控制台输出")
         from paddleocr import paddleocr
         import logging
         paddleocr.logging.disable(logging.DEBUG)
 
     if glv.get("devmode"):
+        print("已导出")
         path = [
             "../log",
             "../log/outputtexts",
