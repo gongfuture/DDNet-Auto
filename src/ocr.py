@@ -1,15 +1,14 @@
 from paddleocr import PaddleOCR, draw_ocr
-import global_variable as glv
 from PIL import Image
 import io
 import numpy as np
 import os
 import time
-
-
+from src.config import get_config_param
 
 # need to run only once to download and load model into memory
-ocr = PaddleOCR(use_mp=True, use_angle_cls=False, precision="fp32", lang="ch")
+# ocr = PaddleOCR(use_mp=True, use_angle_cls=False, precision="fp32", lang="ch")
+ocr = PaddleOCR(**get_config_param("OCRParams"))
 
 
 def ocr_recognition(img_data):
@@ -18,13 +17,12 @@ def ocr_recognition(img_data):
     img_array = np.array(img_path)
     result = ocr.ocr(img_array)
 
-    if not glv.get("devmode"):
+    if not get_config_param("devmode"):
         print("禁止控制台输出")
         from paddleocr import paddleocr
         import logging
         paddleocr.logging.disable(logging.DEBUG)
-
-    if glv.get("devmode"):
+    else:
         print("已导出")
         path = [
             "../log",
