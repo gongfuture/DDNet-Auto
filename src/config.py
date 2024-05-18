@@ -1,3 +1,4 @@
+import portalocker
 from ruamel.yaml import YAML
 from pathlib import Path
 from typing import *
@@ -22,6 +23,23 @@ def load_config() -> None:
         config_path = ROOT_PATH / 'config/config.yaml'
         with open(config_path, 'r', encoding='utf-8') as f:
             CONFIG = yaml.load(f)
+        fix_boolean_values(CONFIG)
+
+
+def write_config_to_file() -> None:
+    """
+    将修改后的CONFIG字典写回到config.yaml文件中
+    :return: None
+    """
+    config_path = ROOT_PATH / 'config/config.yaml'
+    with open(config_path, 'w', encoding='utf-8') as f:
+        try:
+            portalocker.lock(f, portalocker.LOCK_EX)  # 获取文件锁
+            yaml.dump(CONFIG, f)
+        except IOError as e:
+            print(f"写入配置文件时出错: {e}")
+        finally:
+            portalocker.unlock(f)  # 释放文件锁
 
 
 def fix_boolean_values(dictionary: dict) -> None:
@@ -30,22 +48,26 @@ def fix_boolean_values(dictionary: dict) -> None:
     :param dictionary: 待处理的字典
     :return: None
     """
-# 创建一个列表，包含所有可能的布尔值的字符串表示
+    # 创建一个列表，包含所有可能的布尔值的字符串表示
     true_values = ['true', 'ture', 'treu', 't', 'yes', 'y', '1']
     false_values = ['false', 'fasle', 'fales', 'flase', 'f', 'no', 'n', '0']
+    # 创建一个标志，用于检查是否需要写入文件
+    need_write = False
     for key, value in dictionary.items():
         if isinstance(value, str):
             value_lower = value.lower()
             if value_lower in true_values:
                 dictionary[key] = True
+                need_write = True
             elif value_lower in false_values:
                 dictionary[key] = False
+                need_write = True
         elif isinstance(value, dict):
             fix_boolean_values(value)
+
     # 将修改后的CONFIG字典写回到config.yaml文件中
-    config_path = ROOT_PATH / 'config/config.yaml'
-    with open(config_path, 'w', encoding='utf-8') as f:
-        yaml.dump(CONFIG, f)
+    if need_write:
+        write_config_to_file()
 
 
 def get_config_param(config_param_name: str) -> Any:
@@ -92,9 +114,7 @@ def write_config_param(config_param_name: str, value: Any) -> None:
     set_in_nested_dict(CONFIG, config_param_name, value)
 
     # 将修改后的CONFIG字典写回到config.yaml文件中
-    config_path = ROOT_PATH / 'config/config.yaml'
-    with open(config_path, 'w', encoding='utf-8') as f:
-        yaml.dump(CONFIG, f)
+    write_config_to_file()
 
 
 def set_log_level(level=None) -> None:
@@ -128,7 +148,6 @@ def set_log_level(level=None) -> None:
 
 
 load_config()
-fix_boolean_values(CONFIG)
 set_log_level()
 
 
